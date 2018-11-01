@@ -75,6 +75,9 @@ function _pwe_extra_placeholders( $html, $Email ) {
 
 function pwe_ajax_return_html_template( $mail_class = false ) {
 	
+	// Use a filter to identify that the the preview is running
+	add_filter( 'aapwe_is-previewing-wc-email', '__return_true' );
+	
 	$order_id = isset($_REQUEST['order_id']) ? (int) $_REQUEST['order_id'] : false;
 	$order = wc_get_order( absint( $order_id ) );
 	
