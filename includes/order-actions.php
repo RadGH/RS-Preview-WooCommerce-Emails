@@ -73,8 +73,19 @@ function _pwe_extra_placeholders( $html, $Email ) {
 	return str_replace( $find, $replace, $html );
 }
 
-function pwe_ajax_return_html_template( $mail_class = false ) {
+// If RS WooCommerce Order Messages is active, overwrite the order status in previewed emails
+function pwe_override_order_status_for_rs_woocommerce_order_messages( $order_status, $order ) {
+	global $pwe_override;
+	if ( !isset($pwe_override) ) return $order_status;
 	
+	// Verify the preview email is using the same order ID
+	if ( $pwe_override['order_id'] != $order->get_id() ) return $order_status; // wrong order id
+	
+	// Return the override status instead
+	return $pwe_override['order_status'];
+}
+
+function pwe_ajax_return_html_template( $mail_class = false ) {
 	// Use a filter to identify that the the preview is running
 	add_filter( 'rspwe_is-previewing-wc-email', '__return_true' );
 	
@@ -84,6 +95,30 @@ function pwe_ajax_return_html_template( $mail_class = false ) {
 	if ( !$order_id || !$order || is_wp_error($order) || !is_a( $order, 'WC_Order' ) ) {
 		pwe_return_html_and_exit( '<p><strong>Error: Provided order is invalid.</strong></p>' );
 		exit;
+	}
+	// Get the desired order status to be previewed
+	$override_status = false;
+	
+	// Determine which previews should override the order status. Some emails, like New Account, shouldn't necessarily change the order status
+	switch( $mail_class ) {
+		case 'WC_Email_Cancelled_Order': $override_status = 'cancelled'; break;
+		case 'WC_Email_Failed_Order': $override_status = 'failed'; break;
+		case 'WC_Email_Customer_On_Hold_Order': $override_status = 'on-hold'; break;
+		case 'WC_Email_Customer_Processing_Order': $override_status = 'processing'; break;
+		case 'WC_Email_Customer_Completed_Order': $override_status = 'completed'; break;
+		case 'WC_Email_Customer_Refunded_Order': $override_status = 'refunded'; break;
+	}
+	
+	if ( $override_status ) {
+		// Allow overriding the order status when running A+A WooCommerce Order Messages
+		global $pwe_override;
+		
+		$pwe_override = array(
+			'order_id' => $order_id,
+			'order_status' => $override_status
+		);
+		
+		add_action( 'rs_wom_override-order-status', 'pwe_override_order_status_for_rs_woocommerce_order_messages', 10, 2 );
 	}
 	
 	/*
