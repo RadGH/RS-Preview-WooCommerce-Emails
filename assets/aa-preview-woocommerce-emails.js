@@ -109,6 +109,13 @@ jQuery(function() {
 			return false;
 		}
 
+		if ( action.indexOf('pwe_newtab_get_email_preview_') === 0 ) {
+			var preview_action = action.replace('pwe_newtab_get_email_preview_', '');
+			var order_id = window.pwe.order_id;
+			window.open( window.pwe.preview_email_url + '&pwe_preview_template='+ preview_action + '&order_id=' + order_id , '_blank' );
+			return false;
+		}
+
 		if ( action === 'pwe_empty' || action === 'pwe_separator' ) {
 			return false;
 		}

@@ -43,13 +43,30 @@ function pwe_add_order_actions( $actions ) {
 	$actions['pwe_get_email_preview_Customer_Reset_Password']   = '&nbsp; &nbsp; Reset Password';
 	$actions['pwe_get_email_preview_Customer_New_Account']      = '&nbsp; &nbsp; New Account';
 	
+	$actions['pwe_newtab_empty'] = '';
+	$actions['pwe_newtab_separator'] = 'Preview emails in new tab:';
+	$actions['pwe_newtab_get_email_preview_New_Order']                 = '&nbsp; &nbsp; [Admin] New Order';
+	$actions['pwe_newtab_get_email_preview_Cancelled_Order']           = '&nbsp; &nbsp; [Admin] Cancelled Order';
+	$actions['pwe_newtab_get_email_preview_Failed_Order']              = '&nbsp; &nbsp; [Admin] Failed Order';
+	$actions['pwe_newtab_get_email_preview_Customer_On_Hold_Order']    = '&nbsp; &nbsp; On Hold';
+	$actions['pwe_newtab_get_email_preview_Customer_Processing_Order'] = '&nbsp; &nbsp; Processing';
+	$actions['pwe_newtab_get_email_preview_Customer_Completed_Order']  = '&nbsp; &nbsp; Completed';
+	$actions['pwe_newtab_get_email_preview_Customer_Refunded_Order']   = '&nbsp; &nbsp; Refunded';
+	$actions['pwe_newtab_get_email_preview_Customer_Invoice']          = '&nbsp; &nbsp; Invoice';
+	$actions['pwe_newtab_get_email_preview_Customer_Note']             = '&nbsp; &nbsp; Customer Note';
+	$actions['pwe_newtab_get_email_preview_Customer_Reset_Password']   = '&nbsp; &nbsp; Reset Password';
+	$actions['pwe_newtab_get_email_preview_Customer_New_Account']      = '&nbsp; &nbsp; New Account';
+	
 	$order_id = isset($_REQUEST['post']) ? $_REQUEST['post'] : get_the_ID();
 	$key = get_post_meta( $order_id, '_order_key', true );
 	$checkout_url = untrailingslashit(wc_get_checkout_url()) . '/order-received/'. $order_id .'/?key=' . $key;
+	$preview_email_url = get_edit_post_link( $order_id, false );
 	?>
 <script type="text/javascript">
 window.pwe = {
-	receipt_page_url: <?php echo json_encode($checkout_url); ?>
+	receipt_page_url: <?php echo json_encode($checkout_url); ?>,
+	preview_email_url: <?php echo json_encode($preview_email_url); ?>,
+	order_id: <?php echo json_encode( $order_id ); ?>,
 };
 </script>
 <?php
@@ -57,6 +74,19 @@ window.pwe = {
 	return $actions;
 }
 add_filter( 'woocommerce_order_actions', 'pwe_add_order_actions', 15 );
+
+function pwe_preview_email_page() {
+	if ( ! isset($_GET['pwe_preview_template']) ) return;
+	
+	$template = stripslashes($_GET['pwe_preview_template']);
+	
+	$html = pwe_ajax_return_html_template( 'WC_Email_' . $template, true );
+	
+	echo $html;
+	
+	exit;
+}
+add_action( 'admin_init', 'pwe_preview_email_page' );
 
 function pwe_return_html_and_exit( $html ) {
 	$result = array( 'html' => $html );
@@ -85,7 +115,7 @@ function pwe_override_order_status_for_rs_woocommerce_order_messages( $order_sta
 	return $pwe_override['order_status'];
 }
 
-function pwe_ajax_return_html_template( $mail_class = false ) {
+function pwe_ajax_return_html_template( $mail_class = false, $return = false ) {
 	// Use a filter to identify that the the preview is running
 	add_filter( 'rspwe_is-previewing-wc-email', '__return_true' );
 	
@@ -252,7 +282,12 @@ function pwe_ajax_return_html_template( $mail_class = false ) {
 <div id="pwe-email-body"><?php echo $body; ?></div>
 <?php
 	
-	// Return the HTML with our ajax function
-	pwe_return_html_and_exit( ob_get_clean() );
-	exit;
+	if ( $return ) {
+		return ob_get_clean();
+	}else{
+		// Return the HTML with our ajax function
+		pwe_return_html_and_exit( ob_get_clean() );
+		exit;
+	}
+	
 }
