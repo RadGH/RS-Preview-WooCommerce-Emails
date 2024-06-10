@@ -57,8 +57,10 @@ function pwe_add_order_actions( $actions ) {
 	$actions['pwe_newtab_get_email_preview_Customer_Reset_Password']   = '&nbsp; &nbsp; Reset Password';
 	$actions['pwe_newtab_get_email_preview_Customer_New_Account']      = '&nbsp; &nbsp; New Account';
 	
-	$order_id = isset($_REQUEST['post']) ? $_REQUEST['post'] : get_the_ID();
-	$key = get_post_meta( $order_id, '_order_key', true );
+	// Legacy: &post=123
+	// New since block themes: &id=123
+	$order_id = $_GET['id'] ?? $_POST['post'] ?? get_the_ID();
+	$key = pwe_get_order_key( $order_id );
 	$checkout_url = untrailingslashit(wc_get_checkout_url()) . '/order-received/'. $order_id .'/?key=' . $key;
 	$preview_email_url = get_edit_post_link( $order_id, false );
 	?>
@@ -74,6 +76,12 @@ window.pwe = {
 	return $actions;
 }
 add_filter( 'woocommerce_order_actions', 'pwe_add_order_actions', 15 );
+
+function pwe_get_order_key( $order_id ) {
+	// Old: get_post_meta( $order_id, '_order_key', true );
+	$order = wc_get_order( $order_id );
+	return $order->get_order_key();
+}
 
 function pwe_preview_email_page() {
 	if ( ! isset($_GET['pwe_preview_template']) ) return;

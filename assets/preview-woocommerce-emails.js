@@ -1,5 +1,7 @@
 jQuery(function() {
-	var $post = jQuery('#post');
+	// #post = legacy orders page form
+	// form[name="order"] = new orders page form with block editor
+	var $post = jQuery('#post, form[name="order"]').first();
 	
 	// Order Actions dropdown
 	var $action_select = jQuery('#actions').find('select[name="wc_order_action"]');
@@ -120,4 +122,8 @@ jQuery(function() {
 			return false;
 		}
 	});
+
+	// Log message that it is ready
+	console.log("[A+A Preview WooCommerce Emails] Ready.", $post[0], $action_select[0]);
+
 });
