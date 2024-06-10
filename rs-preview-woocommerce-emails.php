@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: RS Preview WooCommerce Emails
-Version:     1.2.1
+Version:     1.2.3
 Plugin URI:  http://radleysustaire.com/
 Description: Adds the ability to preview all WooCommerce order emails in a popup without sending an email. Accessible through the "Order Actions" dropdown when editing an order. A bonus option includes the link to view a customer's "Completed Order" page - the same they see after they complete a purchase.
 Author:      Radley Sustaire
@@ -15,7 +15,7 @@ if ( !defined( 'ABSPATH' ) ) exit;
 
 define( 'PWE_URL', untrailingslashit(plugin_dir_url( __FILE__ )) );
 define( 'PWE_PATH', dirname(__FILE__) );
-define( 'PWE_VERSION', '1.2.1' );
+define( 'PWE_VERSION', '1.2.3' );
 
 add_action( 'plugins_loaded', 'pwe_init_plugin' );
 
