@@ -44,6 +44,9 @@ They are very close, but not exact. There are a few small downsides:
 
 ## Changelog ##
 
+#### 1.2.1
+* Added Git Updater support, allowing this plugin to automatically receive updates if installed.
+
 #### 1.0
 * First release
 
